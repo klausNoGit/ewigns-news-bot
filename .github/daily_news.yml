@@ -1,0 +1,37 @@
+name: Atualizador de Notícias YGO
+
+on:
+  schedule:
+    - cron: '0 11 * * *' # Roda todo dia às 11:00 UTC (08:00 Brasil)
+  workflow_dispatch: # Permite rodar manualmente clicando num botão (para testes)
+
+permissions:
+  contents: write # Permissão para salvar o arquivo json de volta no repo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar dependências
+        run: |
+          pip install -r requirements.txt
+
+      - name: Rodar Script de Notícias
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python main.py
+
+      - name: Salvar (Commit) o novo JSON
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Atualizando notícias diárias [Auto]"
+          file_pattern: news.json
